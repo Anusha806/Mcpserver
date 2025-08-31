@@ -1,5 +1,5 @@
 {
-  "name": "Calculator Tool",
+  "name": "BMI Calculator",
   "version": "0.1.0",
   "type": "module",
   "main": "server.ts",

@@ -1,40 +1,38 @@
 {
-  "name": "Calculator Tool",
-  "description": "A tool that performs basic arithmetic operations on two numbers.",
+  "name": "BMI Calculator",
+  "description": "A tool to calculate Body Mass Index (BMI) and categorize it according to WHO standards.",
   "version": "0.1.0",
   "tools": [
     {
-      "name": "Basic Arithmetic",
-      "description": "Calculates the sum, difference, product, and quotient of two numbers.",
+      "name": "Calculate BMI",
+      "description": "Calculates BMI based on weight and height and categorizes it.",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "number1": {
-            "type": "number"
+          "weight": {
+            "type": "number",
+            "description": "Weight in kilograms"
           },
-          "number2": {
-            "type": "number"
+          "height": {
+            "type": "number",
+            "description": "Height in centimeters"
           }
         },
         "required": [
-          "number1",
-          "number2"
+          "weight",
+          "height"
         ]
       },
       "outputSchema": {
         "type": "object",
         "properties": {
-          "sum": {
-            "type": "number"
+          "bmi": {
+            "type": "number",
+            "description": "Calculated Body Mass Index"
           },
-          "difference": {
-            "type": "number"
-          },
-          "product": {
-            "type": "number"
-          },
-          "quotient": {
-            "type": "number"
+          "category": {
+            "type": "string",
+            "description": "BMI category according to WHO standards"
           }
         }
       }

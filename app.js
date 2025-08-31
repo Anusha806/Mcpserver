@@ -1,117 +1,12 @@
 
-// import readline from "readline";
-// import fetch from "node-fetch";
-// import fs from "fs";
-// import { exec } from "child_process";
-
-// const OPENROUTER_API_KEY = "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"; // replace with your real key
-
-// const rl = readline.createInterface({
-//   input: process.stdin,
-//   output: process.stdout
-// });
-
-// rl.question("Enter your MCP tool request: ", async (userPrompt) => {
-//   try {
-//     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         "Authorization": `Bearer ${OPENROUTER_API_KEY}`
-//       },
-//       body: JSON.stringify({
-//         model: "openai/gpt-4o-mini",
-//         messages: [
-//           {
-//             role: "system",
-//             content: `You are an assistant that ONLY outputs valid JSON for MCP tool specifications. 
-// The JSON MUST have this exact structure:
-
-// {
-//   "name": string,
-//   "description": string,
-//   "version": "0.1.0",
-//   "tools": [
-//     {
-//       "name": string,
-//       "description": string,
-//       "inputSchema": {
-//         "type": "object",
-//         "properties": {
-//           ...
-//         },
-//         "required": [...]
-//       },
-//       "outputSchema": {
-//         "type": "object",
-//         "properties": {
-//           ...
-//         }
-//       }
-//     }
-//   ]
-// }
-
-// No explanations, no extra text, no code fences.`
-//           },
-//           { role: "user", content: userPrompt }
-//         ],
-//         temperature: 0.0
-//       })
-//     });
-
-//     const data = await response.json();
-//     let rawOutput = data?.choices?.[0]?.message?.content?.trim();
-
-//     if (!rawOutput) {
-//       console.error("❌ No response from model:", data);
-//       return;
-//     }
-
-//     // cleanup ```json fences if they sneak in
-//     rawOutput = rawOutput.replace(/```json\s*/i, "").replace(/```$/i, "").trim();
-
-//     try {
-//       let parsed = JSON.parse(rawOutput);
-
-//       fs.writeFileSync("spec.json", JSON.stringify(parsed, null, 2));
-//       console.log("\n✅ JSON saved to spec.json");
-
-//       // run generator automatically
-//       console.log("\n⚙️  Running generator.js ...\n");
-//       exec("node generator.js", (error, stdout, stderr) => {
-//         if (error) {
-//           console.error(`❌ Generator failed: ${error.message}`);
-//           return;
-//         }
-//         if (stderr) console.error(stderr);
-//         console.log(stdout);
-//         console.log("🎉 MCP project generated in /mcp-generated");
-//       });
-
-//     } catch (err) {
-//       console.error("❌ Model output was not valid JSON after cleanup:\n", rawOutput);
-//     }
-
-//   } catch (err) {
-//     console.error("Error calling OpenRouter:", err);
-//   } finally {
-//     rl.close();
-//   }
-// });
-
-
-
-
-
-
 
 // import readline from "readline";
 // import fetch from "node-fetch";
 // import fs from "fs";
 // import { exec } from "child_process";
 
-// const OPENROUTER_API_KEY = "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"; // replace with real key
+// // const OPENROUTER_API_KEY = "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"; // replace with real key
+// const OPENROUTER_API_KEY = "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"; // replace with real key
 // const MAX_RETRIES = 3;
 
 // const rl = readline.createInterface({
@@ -122,7 +17,7 @@
 // // ------------------ Helper to call OpenRouter ------------------
 // async function callLLM(messages) {
 //   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-//     method: "POST",
+//     method: "POST",  
 //     headers: {
 //       "Content-Type": "application/json",
 //       "Authorization": `Bearer ${OPENROUTER_API_KEY}`
@@ -269,12 +164,13 @@
 
 
 
+
 import readline from "readline";
 import fetch from "node-fetch";
 import fs from "fs";
 import { exec } from "child_process";
 
-const OPENROUTER_API_KEY = "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"; // replace with real key
+const OPENROUTER_API_KEY = "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"; // replace with real key
 const MAX_RETRIES = 3;
 
 const rl = readline.createInterface({
@@ -284,56 +180,123 @@ const rl = readline.createInterface({
 
 // ------------------ Helper to call OpenRouter ------------------
 async function callLLM(messages) {
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${OPENROUTER_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: "openai/gpt-4o-mini",
-      messages,
-      temperature: 0.0
-    })
-  });
-  const data = await response.json();
-  return data?.choices?.[0]?.message?.content?.trim();
+  try {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENROUTER_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-4o-mini",
+        messages,
+        temperature: 0.0
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data?.choices?.[0]?.message?.content?.trim();
+  } catch (error) {
+    console.error("❌ API call failed:", error.message);
+    return null;
+  }
 }
 
-// ------------------ Cleanup JSON string ------------------
-function cleanRawJSON(raw) {
-  return raw
-    .replace(/```json\s*/i, "")
-    .replace(/```$/i, "")
-    .replace(/'/g, '"')
+// ------------------ Enhanced JSON extraction and cleanup ------------------
+function extractAndCleanJSON(raw) {
+  if (!raw) return "";
+  
+  console.log("🔍 Raw response length:", raw.length);
+  console.log("🔍 First 100 chars:", JSON.stringify(raw.substring(0, 100)));
+  
+  // Step 1: Remove markdown code fences and common prefixes
+  let cleaned = raw
+    .replace(/```json\s*/gi, "")
+    .replace(/```\s*/gi, "")
+    .replace(/^Here's the JSON.*?:\s*/gi, "")
+    .replace(/^JSON:\s*/gi, "")
     .trim();
+  
+  // Step 2: Find the actual JSON object
+  const openBrace = cleaned.indexOf("{");
+  if (openBrace === -1) {
+    throw new Error("No opening brace found in response");
+  }
+  
+  // Count braces to find the complete JSON object
+  let braceCount = 0;
+  let endPos = -1;
+  
+  for (let i = openBrace; i < cleaned.length; i++) {
+    if (cleaned[i] === "{") {
+      braceCount++;
+    } else if (cleaned[i] === "}") {
+      braceCount--;
+      if (braceCount === 0) {
+        endPos = i;
+        break;
+      }
+    }
+  }
+  
+  if (endPos === -1) {
+    throw new Error("No closing brace found - incomplete JSON");
+  }
+  
+  const jsonStr = cleaned.substring(openBrace, endPos + 1);
+  
+  // Step 3: Final cleanup
+  const finalJSON = jsonStr
+    .replace(/^\uFEFF/, "") // Remove BOM
+    .replace(/[\u200B-\u200D\uFEFF]/g, "") // Remove zero-width chars
+    .replace(/'/g, '"') // Fix quotes
+    .trim();
+    
+  console.log("🧹 Final JSON length:", finalJSON.length);
+  console.log("🧹 First 100 chars of final JSON:", JSON.stringify(finalJSON.substring(0, 100)));
+  
+  return finalJSON;
 }
 
 // ------------------ Validation via LLM ------------------
 async function validateJSON(jsonString) {
-  const validationPrompt = `
-You are an assistant that checks if a JSON matches the required MCP tool specification.
+  const validationPrompt = `You are an assistant that checks if a JSON matches the required MCP tool specification.
+
 Required structure:
 {
   "name": string,
-  "description": string,
+  "description": string, 
   "version": "0.1.0",
   "tools": [
     {
       "name": string,
       "description": string,
-      "inputSchema": { "type": "object", "properties": { ... }, "required": [...] },
-      "outputSchema": { "type": "object", "properties": { ... } }
+      "inputSchema": {
+        "type": "object",
+        "properties": { ... },
+        "required": [...]
+      },
+      "outputSchema": {
+        "type": "object", 
+        "properties": { ... }
+      }
     }
   ]
 }
+
 JSON to check:
 ${jsonString}
-Respond ONLY with "VALID" or "INVALID".
-`;
+
+Respond ONLY with "VALID" or "INVALID".`;
+
   const result = await callLLM([
     { role: "system", content: validationPrompt }
   ]);
+  
   return result?.toUpperCase() === "VALID";
 }
 
@@ -344,18 +307,20 @@ rl.question("Enter your MCP tool request: ", async (userPrompt) => {
 
   while (attempts < MAX_RETRIES) {
     attempts++;
-
+    console.log(`Attempt ${attempts} of ${MAX_RETRIES}: Generating JSON...`);
+    
     try {
       // Step 1: Generate JSON from user prompt
       let rawOutput = await callLLM([
         {
           role: "system",
-          content: `You are an assistant that ONLY outputs valid JSON for MCP tool specifications.
+          content: `You are an assistant that ONLY outputs valid JSON for MCP tool specifications. 
+
 The JSON MUST have this exact structure:
 {
   "name": string,
   "description": string,
-  "version": "0.1.0",
+  "version": "0.1.0", 
   "tools": [
     {
       "name": string,
@@ -372,23 +337,27 @@ The JSON MUST have this exact structure:
     }
   ]
 }
-No explanations, no extra text, no code fences.`
+
+CRITICAL: Output ONLY the JSON object. No explanations, no extra text, no code fences, no markdown.`
         },
         { role: "user", content: userPrompt }
       ]);
 
       if (!rawOutput) {
         console.error("❌ No response from model");
-        break;
+        continue;
       }
 
-      rawOutput = cleanRawJSON(rawOutput);
+      // Step 2: Extract and clean JSON
+      const cleanedJSON = extractAndCleanJSON(rawOutput);
 
-      // Step 2: Parse JSON
-      parsedJSON = JSON.parse(rawOutput);
+      // Step 3: Parse JSON
+      parsedJSON = JSON.parse(cleanedJSON);
+      console.log("✅ JSON parsed successfully");
 
-      // Step 3: Validate JSON with LLM
+      // Step 4: Validate JSON with LLM
       const isValid = await validateJSON(JSON.stringify(parsedJSON));
+      
       if (isValid) {
         console.log("✅ JSON validated by LLM");
         break;
@@ -396,9 +365,12 @@ No explanations, no extra text, no code fences.`
         console.warn(`⚠️ JSON invalid. Retrying (${attempts}/${MAX_RETRIES})...`);
         parsedJSON = null;
       }
-
+      
     } catch (err) {
-      console.error("❌ Error parsing or validating JSON:", err);
+      console.error(`❌ Error on attempt ${attempts}:`, err.message);
+      if (rawOutput) {
+        console.log("🔍 Raw output sample:", JSON.stringify(rawOutput.substring(0, 200)) + "...");
+      }
       parsedJSON = null;
     }
   }
@@ -414,16 +386,18 @@ No explanations, no extra text, no code fences.`
   console.log("\n✅ JSON saved to spec.json");
 
   // Step 5: Run generator
-  console.log("\n⚙️  Running generator.js ...\n");
+  console.log("\n⚙️ Running generator.js ...\n");
   exec("node generator.js", (error, stdout, stderr) => {
     if (error) {
       console.error(`❌ Generator failed: ${error.message}`);
       rl.close();
       return;
     }
-    if (stderr) console.error(stderr);
+    
+    if (stderr) console.error("⚠️ Generator warnings:", stderr);
     console.log(stdout);
     console.log("🎉 MCP project generated in /mcp-generated");
+    
     rl.close();
   });
 });
