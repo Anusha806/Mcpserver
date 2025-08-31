@@ -1,0 +1,43 @@
+{
+  "name": "Calculator Tool",
+  "description": "A tool that performs basic arithmetic operations on two numbers.",
+  "version": "0.1.0",
+  "tools": [
+    {
+      "name": "Basic Arithmetic",
+      "description": "Calculates the sum, difference, product, and quotient of two numbers.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "number1": {
+            "type": "number"
+          },
+          "number2": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "number1",
+          "number2"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "sum": {
+            "type": "number"
+          },
+          "difference": {
+            "type": "number"
+          },
+          "product": {
+            "type": "number"
+          },
+          "quotient": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  ]
+}

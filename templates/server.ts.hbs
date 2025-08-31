@@ -1,0 +1,218 @@
+{{!-- 
+
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { stdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
+
+const server = new Server(
+  { name: "{{name}}", version: "0.1.0" },
+  { capabilities: { tools: {} } }
+);
+
+{{#each tools}}
+server.tool(
+  "{{name}}",
+  "{{description}}",
+  {{zodFromSchema inputSchema}},
+  async (args) => {
+    // Auto-implemented test logic based on schema
+    const { {{#each inputSchema.properties}}{{@key}}, {{/each}} } = args;
+
+    return {
+      {{#each outputSchema.properties}}
+      {{@key}}: null, // placeholder for real client use
+      {{/each}}
+    };
+  }
+);
+{{/each}}
+
+// 🆕 Local test mode (bypasses MCP if run with --test)
+if (process.argv.includes("--test")) {
+  console.log("🧪 Running in test mode...");
+
+  // Hardcoded sample values (can improve later to accept CLI input)
+  const number1 = 10;
+  const number2 = 5;
+
+  console.log("Inputs:", { number1, number2 });
+  console.log("Results:", {
+    sum: number1 + number2,
+    difference: number1 - number2,
+    product: number1 * number2,
+    quotient: number2 !== 0 ? number1 / number2 : null,
+  });
+
+  process.exit(0);
+}
+
+const transport = stdioServerTransport();
+await server.connect(transport); --}}
+
+{{!-- 
+import { z } from "zod";
+
+const TEST_MODE = process.argv.includes("--test");
+
+/** Pretty printer without relying on JSON circular-safe libs */
+function print(obj: unknown) {
+  try {
+    console.log(JSON.stringify(obj, null, 2));
+  } catch {
+    console.log(obj);
+  }
+}
+
+{{!-- Helper to build a simple sample input for each tool from its JSON schema --}}
+function sampleFromSchema(schema: any) {
+  if (!schema || schema.type !== "object") return {};
+  const out: any = {};
+  const props = schema.properties || {};
+  for (const key of Object.keys(props)) {
+    const def = props[key] || {};
+    switch (def.type) {
+      case "number": out[key] = 42; break;
+      case "integer": out[key] = 42; break;
+      case "boolean": out[key] = true; break;
+      case "string": out[key] = "example"; break;
+      case "array": out[key] = []; break;
+      case "object": out[key] = {}; break;
+      default: out[key] = null;
+    }
+  }
+  return out;
+}
+
+if (TEST_MODE) {
+  console.log("🧪 Test mode: schema smoke test for \"{{name}}\" (v0.1.0)");
+  {{#each tools}}
+  console.log("\n--- Tool: {{name}} ---");
+  console.log("Description: {{description}}");
+  const sampleInput_{{@index}} = sampleFromSchema({{{json inputSchema}}});
+  console.log("Sample input:");
+  print(sampleInput_{{@index}});
+  console.log("Expected output schema:");
+  print({{{json outputSchema}}});
+  {{/each}}
+  process.exit(0);
+}
+
+// Normal MCP server mode (only runs when NOT in --test)
+const { Server } = await import("@modelcontextprotocol/sdk/server/index.js");
+const { stdioServerTransport } = await import("@modelcontextprotocol/sdk/server/stdio.js");
+
+const server = new Server(
+  { name: "{{name}}", version: "0.1.0" },
+  { capabilities: { tools: {} } }
+);
+
+{{#each tools}}
+server.tool(
+  "{{name}}",
+  "{{description}}",
+  {{zodFromSchema inputSchema}},
+  async (_args) => {
+    // Generic placeholder that returns the correct output shape.
+    // Real logic will be provided by the client or later codegen stages.
+    return {
+      {{#each outputSchema.properties}}
+      {{@key}}: null{{#unless @last}},{{/unless}}
+      {{/each}}
+    };
+  }
+);
+{{/each}}
+
+const transport = stdioServerTransport();
+await server.connect(transport); --}}
+
+
+import { z } from "zod";
+
+const TEST_MODE = process.argv.includes("--test");
+
+{{!-- function print(obj: unknown) {
+  try { console.log(JSON.stringify(obj, null, 2)); } catch { console.log(obj); }
+} --}}
+
+{{!-- function print(obj: unknown) {
+  try {
+    // Ensure prototype is normal for JSON.stringify
+    const normalObj = obj && typeof obj === "object" ? Object.assign({}, obj) : obj;
+    console.log(JSON.stringify(normalObj, null, 2));
+  } catch {
+    console.log(obj);
+  }
+} --}}
+
+function print(obj: unknown) {
+  try {
+    function normalize(o: any): any {
+      if (Array.isArray(o)) return o.map(normalize);
+      if (o && typeof o === "object") return Object.fromEntries(Object.entries(o).map(([k,v]) => [k, normalize(v)]));
+      return o;
+    }
+    console.log(JSON.stringify(normalize(obj), null, 2));
+  } catch {
+    console.log(obj);
+  }
+}
+
+
+
+function sampleFromSchema(schema: any) {
+  if (!schema || schema.type !== "object") return {};
+  const out: any = {};
+  for (const key of Object.keys(schema.properties || {})) {
+    const def = schema.properties[key];
+    switch (def.type) {
+      case "number": out[key] = 42; break;
+      case "integer": out[key] = 42; break;
+      case "boolean": out[key] = true; break;
+      case "string": out[key] = "example"; break;
+      case "array": out[key] = []; break;
+      case "object": out[key] = sampleFromSchema(def); break;
+      default: out[key] = null;
+    }
+  }
+  return out;
+}
+
+if (TEST_MODE) {
+  console.log("🧪 Test mode: schema smoke test for \"{{name}}\"");
+  {{#each tools}}
+  console.log("\n--- Tool: {{name}} ---");
+  console.log("Description:", "{{description}}");
+  const sampleInput_{{@index}} = sampleFromSchema({{{json inputSchema}}});
+  console.log("Sample input:");
+  print(sampleInput_{{@index}});
+  console.log("Expected output:");
+  print({{{json outputSchema}}});
+  {{/each}}
+  process.exit(0);
+}
+
+// Normal MCP server mode
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+
+const server = new Server({ name: "{{name}}", version: "0.1.0" }, { capabilities: { tools: {} } });
+
+{{#each tools}}
+server.registerTool(
+  "{{name}}",
+  {
+    description: "{{description}}",
+    input: {{zodFromSchema inputSchema}},
+    output: {{zodFromSchema outputSchema}},
+    handler: async (_args: any) => ({
+      {{#each outputSchema.properties}}
+      {{@key}}: null{{#unless @last}},{{/unless}}
+      {{/each}}
+    }),
+  }
+);
+{{/each}}
+
+const transport = new StdioServerTransport();
+await server.connect(transport);

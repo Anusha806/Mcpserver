@@ -1,0 +1,15 @@
+{
+  "name": "{{name}}",
+  "description": "{{description}}",
+  "version": "0.1.0",
+  "tools": [
+    {{#each tools}}
+    {
+      "name": "{{name}}",
+      "description": "{{description}}",
+      "inputSchema": {{{json inputSchema}}},
+      "outputSchema": {{{json outputSchema}}}
+    }{{#unless @last}},{{/unless}}
+    {{/each}}
+  ]
+}
